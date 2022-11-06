@@ -19,14 +19,15 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation(kotlin("stdlib"))
+    implementation(kotlin("reflect"))
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.cloud:spring-cloud-starter")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation(libs.littleproxy)
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
@@ -59,5 +60,5 @@ val jar by tasks.getting(Jar::class) {
 val bootJar by tasks.getting(BootJar::class) {
     enabled = true
     archiveFileName.set("app.jar")
-    mainClass.set("io.johnsonlee.springboot.starter.StarterApplicationKt")
+    mainClass.set("io.johnsonlee.mitmproxy.MitmProxyApplication")
 }

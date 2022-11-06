@@ -1,0 +1,8 @@
+[versions]
+bouncycastle = "1.64"
+
+[libraries]
+littleproxy = "xyz.rogfam:littleproxy:2.0.13"
+bouncycastle-bcprov-jdk15on = { module = "org.bouncycastle:bcprov-jdk15on", version.ref = "bouncycastle" }
+bouncycastle-bcpkix-jdk15on = { module = "org.bouncycastle:bcpkix-jdk15on", version.ref = "bouncycastle" }
+

@@ -1,11 +1,13 @@
 version: "3.0"
 
 services:
-  app:
+  mitmproxy:
     build:
       context: .
       dockerfile: ./Dockerfile
     ports:
       - "8080:8080"
+      - "8888:8888"
     environment:
       - SPRING_PROFILE=prod
+      - MITMPROXY_ALLOW_LOCAL_ONLY=false
