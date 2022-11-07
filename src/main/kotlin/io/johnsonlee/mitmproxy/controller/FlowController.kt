@@ -30,7 +30,7 @@ class FlowController(@Autowired private val flowService: FlowService) {
         return filters.fold(flowService.flows) { records, filter ->
             records.filter(filter)
         }.associate {
-            it.id to "${it.request.method} ${it.request.uri}"
+            it.id to "${it.request.method} ${it.request.url}"
         }
     }
 

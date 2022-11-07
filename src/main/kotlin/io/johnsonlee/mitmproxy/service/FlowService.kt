@@ -1,7 +1,7 @@
 package io.johnsonlee.mitmproxy.service
 
 import org.springframework.stereotype.Service
-import java.net.URI
+import java.net.URL
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -31,16 +31,16 @@ class FlowService {
 
 data class Flow(val id: Int, val request: Request, val response: Response) {
 
-    data class Request(val method: String, val uri: URI, val headers: Map<String, String>, val body: Any?)
+    data class Request(val method: String, val url: URL, val headers: Map<String, String>, val body: Any?)
 
     data class Response(val status: Int, val headers: Map<String, String>, val body: Any?)
 
     val host: String by lazy {
-        request.headers["Host"] ?: request.uri.host
+        request.url.host
     }
 
     val path: String by lazy {
-        request.uri.path
+        request.url.path
     }
 
 }

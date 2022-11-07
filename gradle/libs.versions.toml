@@ -3,6 +3,7 @@ bouncycastle = "1.64"
 
 [libraries]
 littleproxy = "xyz.rogfam:littleproxy:2.0.13"
+okhttp3 = "com.squareup.okhttp3:okhttp:4.10.0"
 bouncycastle-bcprov-jdk15on = { module = "org.bouncycastle:bcprov-jdk15on", version.ref = "bouncycastle" }
 bouncycastle-bcpkix-jdk15on = { module = "org.bouncycastle:bcpkix-jdk15on", version.ref = "bouncycastle" }
 

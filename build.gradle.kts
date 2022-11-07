@@ -28,6 +28,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation(libs.littleproxy)
+    implementation(libs.okhttp3)
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 

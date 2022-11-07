@@ -1,32 +1,28 @@
 package io.johnsonlee.mitmproxy.service
 
-import io.netty.handler.codec.http.HttpRequest
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
-import java.net.URL
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class MappingService {
 
-    private val _locals = ConcurrentHashMap<MapFrom, Resource>()
+    private val _locals = ConcurrentHashMap<RegexLocation, Resource>()
 
-    private val _remotes = ConcurrentHashMap<MapFrom, URL>()
+    private val _remotes = ConcurrentHashMap<RegexLocation, LiteralLocation>()
 
-    internal val locals: Map<MapFrom, Resource>
+    internal val locals: Map<RegexLocation, Resource>
         get() = _locals.toMap()
 
-    internal val remotes: Map<MapFrom, URL>
+    internal val remotes: Map<RegexLocation, LiteralLocation>
         get() = _remotes.toMap()
 
-    fun mapToLocal(from: MapFrom, local: Resource) {
+    fun mapToLocal(from: RegexLocation, local: Resource) {
         _locals[from] = local
     }
 
-    fun mapToRemote(from: MapFrom, remote: URL) {
+    fun mapToRemote(from: RegexLocation, remote: LiteralLocation) {
         _remotes[from] = remote
     }
 
 }
-
-typealias MapFrom = (HttpRequest) -> Boolean
