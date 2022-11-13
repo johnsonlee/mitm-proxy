@@ -4,8 +4,11 @@ import com.fasterxml.jackson.core.JacksonException
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.johnsonlee.mitmproxy.service.Flow
 import io.johnsonlee.mitmproxy.service.FlowService
-import io.johnsonlee.mitmproxy.service.RegexLocation
 import io.johnsonlee.mitmproxy.service.MappingService
+import io.johnsonlee.mitmproxy.service.RegexLocation
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.DistributionSummary
+import io.micrometer.core.instrument.MeterRegistry
 import io.netty.buffer.ByteBufUtil
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
@@ -41,8 +44,9 @@ internal class MitmProxyHttpFilters(
         private val okHttpClient: OkHttpClient,
         private val mappingService: MappingService,
         private val flowService: FlowService,
-        private val originalRequest: HttpRequest,
-        private val ctx: ChannelHandlerContext?
+        private val meterRegistry: MeterRegistry,
+        originalRequest: HttpRequest,
+        ctx: ChannelHandlerContext?
 ) : HttpFiltersAdapter(originalRequest, ctx) {
 
     private val logger = LoggerFactory.getLogger(MitmProxyHttpFilters::class.java)
@@ -54,13 +58,25 @@ internal class MitmProxyHttpFilters(
         originalRequest.headers()[HOST] ?: originalRequest.uri().toHttpUrlOrNull()?.host ?: ""
     }
 
+    private val originalUri: String by lazy {
+        stripHost(originalRequest.uri())
+    }
+
     private val originalPath: String by lazy {
-        stripHost(originalRequest.uri()).substringBefore('?')
+        originalUri.substringBefore('?')
     }
 
     private val originalQuery: String by lazy {
-        stripHost(originalRequest.uri()).substringAfter('?', "")
+        originalUri.substringAfter('?', "")
     }
+
+    private val counter = Counter.builder("mitmproxy.requests")
+            .baseUnit("count")
+            .description("The number of requests")
+            .tag("host", originalHost)
+            .tag("method", originalRequest.method().name())
+            .tag("uri", originalUri)
+            .register(meterRegistry)
 
     init {
         (originalRequest as? FullHttpMessage)?.retain()
@@ -68,39 +84,44 @@ internal class MitmProxyHttpFilters(
 
     override fun clientToProxyRequest(httpObject: HttpObject?): HttpResponse? {
         return (httpObject as? HttpRequest)?.run {
+            counter.increment()
+            summarize("mitmproxy.request.size", "The content length of request")
+                    .record(HttpUtil.getContentLength(this).toDouble())
             mapToLocal() ?: mapToRemote()
-        }?.also(::recordFlow)
+        }?.recordFlow()
     }
 
     override fun serverToProxyResponse(httpObject: HttpObject?): HttpObject? {
-        return httpObject.also(::recordFlow)
+        return (httpObject as? HttpResponse)?.recordFlow()
     }
 
-    private fun recordFlow(httpObject: HttpObject?) {
-        (httpObject as? HttpResponse)?.let { response ->
-            flowService += Flow(
-                    id = flowService.nextId(),
-                    request = Flow.Request(
-                            method = originalRequest.method().name(),
-                            url = HttpUrl.Builder()
-                                    .scheme(originalScheme)
-                                    .host(originalHost)
-                                    .encodedPath(originalPath)
-                                    .encodedQuery(originalQuery)
-                                    .build()
-                                    .toUrl(),
-                            headers = originalRequest.headers().toMap(),
-                            body = originalRequest.body()
-                    ),
-                    response = Flow.Response(
-                            status = response.status().code(),
-                            headers = response.headers().toMap(),
-                            body = response.body()
-                    )
-            )
-        }
+    private fun HttpResponse.recordFlow(): HttpResponse {
+        summarize("mitmproxy.response.size", "The content length of response")
+                .record(HttpUtil.getContentLength(this).toDouble())
+
+        flowService += Flow(
+                id = flowService.nextId(),
+                request = Flow.Request(
+                        method = originalRequest.method().name(),
+                        url = HttpUrl.Builder()
+                                .scheme(originalScheme)
+                                .host(originalHost)
+                                .encodedPath(originalPath)
+                                .encodedQuery(originalQuery)
+                                .build()
+                                .toUrl(),
+                        headers = originalRequest.headers().toMap(),
+                        body = originalRequest.body()
+                ),
+                response = Flow.Response(
+                        status = status().code(),
+                        headers = headers().toMap(),
+                        body = body()
+                )
+        )
 
         (originalRequest as? FullHttpMessage)?.release()
+        return this
     }
 
     private fun HttpRequest.mapToLocal(): HttpResponse? {
@@ -182,6 +203,22 @@ internal class MitmProxyHttpFilters(
         }
 
         return "(${HttpUtil.getContentLength(this, 0)} bytes)"
+    }
+
+    private fun HttpMessage.summarize(name: String, desc: String): DistributionSummary {
+        return DistributionSummary.builder(name)
+                .baseUnit("bytes")
+                .tag("host", originalHost)
+                .tag("path", originalPath)
+                .tag("method", originalRequest.method().name())
+                .tag("uri", originalUri)
+                .apply {
+                    if (this@summarize is HttpResponse) {
+                        tag("status", status().code().toString())
+                    }
+                }
+                .description(desc)
+                .register(meterRegistry)
     }
 
     private infix fun RegexLocation.matches(request: HttpRequest): Boolean {

@@ -1,0 +1,37 @@
+version: "3.0"
+
+services:
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    user: "104"
+    volumes:
+      - ./grafana/provisioning/:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards/mitmproxy.json:/var/lib/grafana/dashboards/mitmproxy.json:ro
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    restart: unless-stopped
+
+  mitmproxy:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: mitmproxy
+    ports:
+      - "8080:8080"
+      - "8888:8888"
+    environment:
+      - SPRING_PROFILE=prod
+      - MITMPROXY_ALLOW_LOCAL_ONLY=false
+    restart: unless-stopped

@@ -6,6 +6,7 @@ import io.johnsonlee.mitmproxy.internal.FlowTracker
 import io.johnsonlee.mitmproxy.internal.MitmProxyHttpFilters
 import io.johnsonlee.mitmproxy.service.FlowService
 import io.johnsonlee.mitmproxy.service.MappingService
+import io.micrometer.core.instrument.MeterRegistry
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.HttpRequest
 import okhttp3.OkHttpClient
@@ -31,6 +32,7 @@ class MitmProxyConfiguration {
             okHttpClient: OkHttpClient,
             mappingService: MappingService,
             flowService: FlowService,
+            meterRegistry: MeterRegistry
     ): HttpProxyServerBootstrap = DefaultHttpProxyServer.bootstrap()
             .withPort(port)
             .withAllowLocalOnly(MITMPROXY_ALLOW_LOCAL_ONLY?.toBoolean() ?: true)
@@ -49,6 +51,7 @@ class MitmProxyConfiguration {
                         okHttpClient,
                         mappingService,
                         flowService,
+                        meterRegistry,
                         originalRequest,
                         ctx
                 )
