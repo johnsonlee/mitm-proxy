@@ -1,12 +1,24 @@
-# mitm-proxy
+# mitmproxy
 
 A Man-In-The-Middle proxy server in Kotlin.
 
 ## Getting Started
 
-```bash
-docker-compose up -d --build
-```
+1. Launch mitmproxy server
+
+    ```bash
+    cd docker && docker-compose up -d --build
+    ```
+
+1. Launch emulator
+
+    ```bash
+    ./emulator.sh
+    ```
+
+1. Check metrics
+
+Open [http://localhost:3000](http://localhost:3000) to check Grafana dashboard
 
 ## Features
 
