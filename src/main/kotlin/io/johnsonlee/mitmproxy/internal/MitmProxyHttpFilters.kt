@@ -71,7 +71,6 @@ internal class MitmProxyHttpFilters(
     }
 
     private val counter = Counter.builder("mitmproxy.requests")
-            .baseUnit("count")
             .description("The number of requests")
             .tag("host", originalHost)
             .tag("method", originalRequest.method().name())
