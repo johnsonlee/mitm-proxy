@@ -1,6 +1,6 @@
 package io.johnsonlee.mitmproxy.controller
 
-import io.johnsonlee.mitmproxy.internal.PEM_CERT_FILE_PATH
+import io.johnsonlee.mitmproxy.internal.ssl.PEM_CERT_FILE_PATH
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpHeaders

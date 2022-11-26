@@ -1,4 +1,4 @@
-package io.johnsonlee.mitmproxy.internal
+package io.johnsonlee.mitmproxy.internal.ssl
 
 import io.netty.handler.codec.http.HttpRequest
 import org.littleshoot.proxy.MitmManager
@@ -48,7 +48,7 @@ internal class CertificateSniffingMitmManager @JvmOverloads constructor(
     private fun getCommonName(c: X509Certificate): String {
         logger.debug("Subject DN principal name: {}", c.subjectDN.name)
 
-        return c.subjectDN.name.split(",\\s*").firstOrNull {
+        return c.subjectDN.name.split(",\\s*".toRegex()).firstOrNull {
             it.startsWith("CN=")
         }?.substring(3) ?: throw IllegalStateException("Missed CN in Subject DN: ${c.subjectDN}")
     }

@@ -1,4 +1,4 @@
-package io.johnsonlee.mitmproxy.internal
+package io.johnsonlee.mitmproxy.internal.ssl
 
 import java.security.KeyStore
 import java.security.cert.CertificateException

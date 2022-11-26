@@ -1,7 +1,8 @@
-package io.johnsonlee.mitmproxy.internal
+package io.johnsonlee.mitmproxy.internal.ssl
 
 import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
+import io.johnsonlee.mitmproxy.internal.util.MillisecondsDuration
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import org.littleshoot.proxy.SslEngineSource
 import org.slf4j.LoggerFactory
@@ -121,7 +122,7 @@ internal class BouncyCastleSslEngineSource @JvmOverloads constructor(
     }
 
     private fun loadKeyStore(): KeyStore {
-        return javaClass.getResourceAsStream("${PEM_CERT_PREFIX}/${authority.alias}${KEY_STORE_FILE_EXTENSION}").use {
+        return javaClass.getResourceAsStream("$PEM_CERT_PREFIX/${authority.alias}$KEY_STORE_FILE_EXTENSION").use {
             KeyStore.getInstance(KEY_STORE_TYPE).apply {
                 load(it, authority.password)
             }

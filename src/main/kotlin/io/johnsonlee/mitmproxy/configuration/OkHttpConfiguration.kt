@@ -1,18 +1,23 @@
 package io.johnsonlee.mitmproxy.configuration
 
 import okhttp3.OkHttpClient
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.time.Duration
 
 @Configuration
-class OkHttpConfiguration {
+internal class OkHttpConfiguration {
 
     @Bean
-    fun okHttpClient(): OkHttpClient = OkHttpClient.Builder()
-            .connectTimeout(Duration.ofSeconds(60))
-            .readTimeout(Duration.ofSeconds(30))
-            .writeTimeout(Duration.ofSeconds(30))
+    fun okHttpClient(
+            @Value("\${mitmproxy.okhttp.connect-timeout:PT30S}") connectTimeout: Duration,
+            @Value("\${mitmproxy.okhttp.read-timeout:PT30S}") readTimeout: Duration,
+            @Value("\${mitmproxy.okhttp.write-timeout:PT30S}") writeTimeout: Duration,
+    ): OkHttpClient = OkHttpClient.Builder()
+            .connectTimeout(connectTimeout)
+            .readTimeout(readTimeout)
+            .writeTimeout(writeTimeout)
             .build()
 
 }

@@ -1,5 +1,6 @@
-package io.johnsonlee.mitmproxy.internal
+package io.johnsonlee.mitmproxy.internal.ssl
 
+import io.johnsonlee.mitmproxy.internal.util.MillisecondsDuration
 import org.bouncycastle.asn1.ASN1EncodableVector
 import org.bouncycastle.asn1.ASN1InputStream
 import org.bouncycastle.asn1.DERSequence
@@ -56,7 +57,7 @@ internal const val KEY_STORE_FILE_EXTENSION = ".p12"
  * ```
  */
 internal const val PEM_CERT_PREFIX = "/certs"
-internal const val PEM_CERT_FILE_PATH = "${PEM_CERT_PREFIX}/b44475dc.0"
+internal const val PEM_CERT_FILE_PATH = "$PEM_CERT_PREFIX/b44475dc.0"
 internal const val PEM_CERT_FILE_EXTENSION = ".pem"
 
 private const val KEYGEN_ALGORITHM = "RSA"
@@ -246,11 +247,11 @@ internal object CertificateHelper {
         val keystore = createRootCertificate(authority, KEY_STORE_TYPE)
         logger.info("Created root certificate authority key store in {}ms", duration)
 
-        val cert = File(dir, "${authority.alias}${KEY_STORE_FILE_EXTENSION}").outputStream().use {
+        val cert = File(dir, "${authority.alias}$KEY_STORE_FILE_EXTENSION").outputStream().use {
             keystore.store(it, authority.password)
             keystore.getCertificate(authority.alias)
         }
-        exportPem(File(dir, "${authority.alias}${PEM_CERT_FILE_EXTENSION}"), cert)
+        exportPem(File(dir, "${authority.alias}$PEM_CERT_FILE_EXTENSION"), cert)
     }
 
     @JvmSynthetic

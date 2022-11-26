@@ -1,4 +1,4 @@
-package io.johnsonlee.mitmproxy.internal
+package io.johnsonlee.mitmproxy.internal.util
 
 internal class MillisecondsDuration {
     private val ts = System.currentTimeMillis()

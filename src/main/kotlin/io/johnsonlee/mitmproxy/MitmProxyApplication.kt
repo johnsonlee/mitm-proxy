@@ -1,17 +1,28 @@
 package io.johnsonlee.mitmproxy
 
-import io.johnsonlee.mitmproxy.internal.MillisecondsDuration
+import io.johnsonlee.mitmproxy.internal.middleware.BootstrapMiddlewares
+import io.johnsonlee.mitmproxy.internal.util.MillisecondsDuration
 import org.littleshoot.proxy.HttpProxyServerBootstrap
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.support.BeanDefinitionRegistry
+import org.springframework.beans.factory.support.GenericBeanDefinition
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.context.ApplicationContext
 import org.springframework.context.ConfigurableApplicationContext
 import java.io.BufferedReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.ServiceLoader
+import java.util.function.Supplier
 import kotlin.reflect.KProperty
+
+@JvmSynthetic
+internal inline operator fun <reified T> ApplicationContext.getValue(thisRef: Any?, property: KProperty<*>?): T {
+    return getBean(T::class.java)
+}
 
 @SpringBootApplication
 class MitmProxyApplication(
@@ -29,12 +40,28 @@ class MitmProxyApplication(
 
         @JvmStatic
         fun main(args: Array<String>) {
-            runApplication<MitmProxyApplication>(*args)
+            startup(args, ServiceLoader.load(Middleware::class.java).toList())
         }
 
         @JvmStatic
-        fun startup(args: Array<String>): ConfigurableApplicationContext {
-            return runApplication<MitmProxyApplication>(*args)
+        fun startup(args: Array<String>, vararg middlewares: Middleware): ConfigurableApplicationContext {
+            return startup(args, middlewares.toList())
+        }
+
+        @JvmStatic
+        fun startup(args: Array<String>, middlewares: List<Middleware>): ConfigurableApplicationContext {
+            return runApplication<MitmProxyApplication>(*args).apply {
+                registerBootstrapMiddlewares(middlewares)
+            }
+        }
+
+        @JvmSynthetic
+        private fun ConfigurableApplicationContext.registerBootstrapMiddlewares(middlewares: List<Middleware>) {
+            val bd = GenericBeanDefinition().apply {
+                setBeanClass(BootstrapMiddlewares::class.java)
+                instanceSupplier = Supplier { BootstrapMiddlewares.of(middlewares) }
+            }
+            (beanFactory as BeanDefinitionRegistry).registerBeanDefinition(bd.beanClass.canonicalName, bd)
         }
 
         @JvmStatic
@@ -49,8 +76,4 @@ class MitmProxyApplication(
 
     }
 
-}
-
-inline operator fun <reified T> ConfigurableApplicationContext.getValue(thisRef: Any?, property: KProperty<*>?): T {
-    return getBean(T::class.java)
 }

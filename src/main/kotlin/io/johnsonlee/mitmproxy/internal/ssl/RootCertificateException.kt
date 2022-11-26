@@ -1,4 +1,4 @@
-package io.johnsonlee.mitmproxy.internal
+package io.johnsonlee.mitmproxy.internal.ssl
 
 internal class RootCertificateException(
         message: String,
