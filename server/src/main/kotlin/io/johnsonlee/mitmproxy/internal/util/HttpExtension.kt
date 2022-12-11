@@ -9,7 +9,6 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse
 import io.netty.handler.codec.http.DefaultHttpHeaders
 import io.netty.handler.codec.http.FullHttpMessage
 import io.netty.handler.codec.http.FullHttpRequest
-import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderNames.CONTENT_ENCODING
 import io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH
 import io.netty.handler.codec.http.HttpHeaderNames.HOST

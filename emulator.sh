@@ -53,7 +53,7 @@ while true; do
 done
 
 echo "Install system CA certificate"
-adb push src/main/resources/certs/b44475dc.0 /system/etc/security/cacerts
+adb push server/src/main/resources/certs/b44475dc.0 /system/etc/security/cacerts
 sleep 1
 adb shell chmod 664 /system/etc/security/cacerts/b44475dc.0
 sleep 1

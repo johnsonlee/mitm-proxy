@@ -27,14 +27,14 @@ internal class MitmFilters(
         ctx: ChannelHandlerContext?
 ) : HttpFiltersAdapter(originalRequest, ctx), ApplicationContext by application {
 
-    val bootstrap: BootstrapMiddlewares by application
+    private val bootstrap: BootstrapMiddlewares by application
 
     val originalScheme: String
         get() = if ((ctx?.handler() as? ClientToProxyConnection)?.sslEngine == null) "http" else "https"
 
-    lateinit var request: HttpRequest
+    private lateinit var request: HttpRequest
 
-    lateinit var outbound: MiddlewarePipeline
+    private lateinit var outbound: MiddlewarePipeline
 
     override fun proxyToServerRequest(httpObject: HttpObject?): HttpResponse? {
         this.request = (httpObject as? HttpRequest)?.takeIf {
@@ -43,9 +43,10 @@ internal class MitmFilters(
 
         val middlewares = mutableListOf<Middleware>()
         middlewares += bootstrap.get()
+        middlewares += FlowRecordingMiddleware(this)
+        middlewares += MicrometerMiddleware(this)
         middlewares += MapToLocalMiddleware(this)
         middlewares += MapToRemoteMiddleware(this)
-        // middlewares += ProxyToServerMiddleware(this)
         this.outbound = MiddlewarePipeline(this.request, middlewares)
 
         return try {
@@ -57,12 +58,7 @@ internal class MitmFilters(
 
     override fun serverToProxyResponse(httpObject: HttpObject?): HttpObject? {
         val response = (httpObject as? HttpResponse)?.retain() ?: return null
-        val middlewares = mutableListOf<Middleware>()
-        middlewares += bootstrap.get()
-        middlewares += MicrometerMiddleware(this)
-        middlewares += FlowRecordingMiddleware(this)
-        middlewares += ServerToProxyMiddleware(response)
-        val inbound = MiddlewarePipeline(this.request, middlewares)
+        val inbound = MiddlewarePipeline(this.request, this.outbound.middlewares + ServerToProxyMiddleware(response))
 
         try {
             return inbound()

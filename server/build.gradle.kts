@@ -60,6 +60,6 @@ val jar by tasks.getting(Jar::class) {
 
 val bootJar by tasks.getting(BootJar::class) {
     enabled = true
-    archiveFileName.set("app.jar")
+    archiveFileName.set("mitmproxy.jar")
     mainClass.set("io.johnsonlee.mitmproxy.MitmProxyApplication")
 }

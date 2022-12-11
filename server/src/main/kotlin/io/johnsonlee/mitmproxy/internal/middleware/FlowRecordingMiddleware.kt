@@ -17,6 +17,8 @@ internal class FlowRecordingMiddleware(
         private val filters: MitmFilters
 ) : Middleware {
 
+    private val t0 = System.currentTimeMillis()
+
     private val flowService: FlowService by filters
 
     private val objectMapper: ObjectMapper by filters
@@ -24,10 +26,12 @@ internal class FlowRecordingMiddleware(
     override fun invoke(pipeline: Middleware.Pipeline): HttpResponse {
         val request = pipeline.request
         val response = pipeline()
+        val duration = System.currentTimeMillis() - t0
         val uri = stripHost(request.uri())
 
         flowService += Flow(
                 id = flowService.nextId(),
+                duration = duration,
                 request = Flow.Request(
                         method = request.method().name(),
                         url = HttpUrl.Builder()

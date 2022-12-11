@@ -5,6 +5,6 @@ RUN ./gradlew bootJar --no-daemon
 
 FROM johnsonlee/java15:latest
 WORKDIR /app
-COPY --from=builder /app/build/libs/app.jar app.jar
+COPY --from=builder /app/server/build/libs/mitmproxy.jar mitmproxy.jar
 COPY --from=builder /app/envsetup.sh envsetup.sh
-CMD ["/bin/bash", "-c", "source envsetup.sh && exec java $JAVA_OPTS -Dspring.profiles.active=prod -jar app.jar"]
+CMD ["/bin/bash", "-c", "source envsetup.sh && exec java $JAVA_OPTS -Dspring.profiles.active=prod -jar mitmproxy.jar"]
