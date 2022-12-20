@@ -33,12 +33,11 @@ class FlowController(@Autowired private val flowService: FlowService) {
         }.map {
             SimpleFlow(
                     id = it.id,
-                    protocol = it.protocol,
-                    host = it.host,
-                    path = it.path,
+                    url = it.request.url.toString(),
                     status = it.response.status,
                     size = it.response.headers[CONTENT_LENGTH]?.toLongOrNull() ?: 0,
-                    duration = 0L
+                    duration = 0L,
+                    client = it.client
             )
         }
     }
@@ -51,23 +50,9 @@ class FlowController(@Autowired private val flowService: FlowService) {
 
 data class SimpleFlow(
         val id: Long,
-        val protocol: String,
-        val host: String,
-        val path: String,
+        val url: String,
         val status: Int,
         val size: Long,
         val duration: Long,
-)
-
-data class SimpleRequest(
-        val method: String,
-        val url: String,
-        val headers: Map<String, String>,
-        val body: Any?,
-)
-
-data class SimpleResponse(
-        val status: Int,
-        val headers: Map<String, String>,
-        val body: Any?,
+        val client: Flow.ClientInfo
 )

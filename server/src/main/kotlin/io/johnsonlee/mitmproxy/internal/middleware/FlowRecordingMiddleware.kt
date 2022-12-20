@@ -11,6 +11,7 @@ import io.johnsonlee.mitmproxy.service.FlowService
 import io.netty.handler.codec.http.HttpHeaderNames.HOST
 import io.netty.handler.codec.http.HttpResponse
 import okhttp3.HttpUrl
+import org.littleshoot.proxy.impl.ClientToProxyConnection
 import org.littleshoot.proxy.impl.ProxyUtils.stripHost
 
 internal class FlowRecordingMiddleware(
@@ -23,14 +24,22 @@ internal class FlowRecordingMiddleware(
 
     private val objectMapper: ObjectMapper by filters
 
+    private val clientToProxy: ClientToProxyConnection? = filters.context?.handler() as? ClientToProxyConnection
+
     override fun invoke(pipeline: Middleware.Pipeline): HttpResponse {
         val request = pipeline.request
         val response = pipeline()
         val duration = System.currentTimeMillis() - t0
         val uri = stripHost(request.uri())
+        val ssl = clientToProxy?.sslEngine?.sslParameters
 
         flowService += Flow(
                 id = flowService.nextId(),
+                client = Flow.ClientInfo(clientToProxy?.clientAddress?.toString()),
+                ssl = Flow.SslInfo(
+                        cipherSuites = ssl?.cipherSuites?.toList() ?: emptyList(),
+                        protocols = ssl?.protocols?.toList() ?: emptyList(),
+                ),
                 duration = duration,
                 request = Flow.Request(
                         method = request.method().name(),

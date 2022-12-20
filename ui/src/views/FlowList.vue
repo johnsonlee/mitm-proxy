@@ -1,25 +1,24 @@
 <script setup lang="ts">
-import { onBeforeMount, onMounted, onUnmounted, ref, watch, watchEffect } from 'vue'
+import { onBeforeMount, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import type { TreeProps } from 'ant-design-vue';
 import FlowService from '@/service/FlowService'
 
 const flowService = new FlowService()
 const autoRefresh = ref(true)
-const currentTab = ref('request')
+const currentTab = ref('summary')
 const searchValue = ref()
 const flowTreeData = ref<TreeProps['treeData']>([])
 const treeHeight = ref<number>(0)
 const selectedFlow = ref()
 
-const buildBaseUrl = (flow: any): string => `${flow.protocol}://${flow.host}`
-
 const parsePathSegments = (path: string) => {
     return path.replace(/^\//, '').split(/\//)
+        .filter((segment: string, index: number, segments: string[]) => segment.length > 0 || index < segments.length - 1)
         .map((segment: string) => `/${segment}`)
 }
 
 const buildTreeData = (treeData: any, flow: any) => {
-    const segments = parsePathSegments(flow.path)
+    const segments = parsePathSegments(flow.url.pathname)
     const buildSubTreeData = (tree: any, segments: string[], path: string[], flow: any) => {
         if (segments.length <= 0) {
             return
@@ -38,17 +37,15 @@ const buildTreeData = (treeData: any, flow: any) => {
         buildSubTreeData(child, segments, prefix, flow)
     }
 
-    const baseUrl = buildBaseUrl(flow)
-    buildSubTreeData(treeData[baseUrl], segments, [baseUrl], flow)
+    buildSubTreeData(treeData[flow.url.origin], segments, [flow.url.origin], flow)
 }
 
 const refresh = async () => {
     const flows = await flowService.getFlows()
     const baseUrls = flows.reduce((hosts: any, flow: any) => {
-        const baseUrl = buildBaseUrl(flow)
-        hosts[baseUrl] = {
-            key: baseUrl,
-            title: baseUrl,
+        hosts[flow.url.origin] = {
+            key: flow.url.origin,
+            title: flow.url.origin,
             children: [],
         }
         return hosts
@@ -116,9 +113,20 @@ onUnmounted(async () => {
         <a-col :span="selectedFlow ? 16 : 0" style="height: 100%" v-if="selectedFlow">
             <a-card style="height: 100%">
                 <a-tabs v-model:activeKey="currentTab">
-                    <a-tab-pane key="request" tab="Request">
+                    <a-tab-pane key="summary" tab="Summary">
                         <a-descriptions :column="1" title="General">
                             <a-descriptions-item label="Id">{{ selectedFlow.id }}</a-descriptions-item>
+                        </a-descriptions>
+                        <a-descriptions :column="1" title="Client">
+                            <a-descriptions-item label="Address">{{ selectedFlow.client.address }}</a-descriptions-item>
+                        </a-descriptions>
+                        <a-descriptions :column="1" title="SSL">
+                            <a-descriptions-item label="Protocols">{{ selectedFlow.ssl.protocols.join(', ') }}</a-descriptions-item>
+                            <a-descriptions-item label="Cipher Suites">{{ selectedFlow.ssl.cipherSuites.join(', ') }}</a-descriptions-item>
+                        </a-descriptions>
+                    </a-tab-pane>
+                    <a-tab-pane key="request" tab="Request">
+                        <a-descriptions :column="1" title="General">
                             <a-descriptions-item label="Method">{{ selectedFlow.request.method }}</a-descriptions-item>
                             <a-descriptions-item label="URL">{{ selectedFlow.request.url }}</a-descriptions-item>
                         </a-descriptions>

@@ -31,6 +31,8 @@ class FlowService {
 
 data class Flow(
         val id: Long,
+        val client: ClientInfo,
+        val ssl: SslInfo,
         val duration: Long,
         val request: Request,
         val response: Response
@@ -39,6 +41,13 @@ data class Flow(
     data class Request(val method: String, val url: URL, val headers: Map<String, String>, val body: Any?)
 
     data class Response(val status: Int, val headers: Map<String, String>, val body: Any?)
+
+    data class ClientInfo(val address: String?)
+
+    data class SslInfo(
+            val cipherSuites: List<String>,
+            val protocols: List<String>,
+    )
 
     val protocol: String by lazy {
         request.url.protocol

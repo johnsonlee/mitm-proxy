@@ -1,6 +1,12 @@
+FROM node:19 AS ui
+WORKDIR /app
+ADD ui .
+RUN npm install cnpm -g --registry=https://registry.npmmirror.com && cnpm install && npm run build
+
 FROM johnsonlee/gradle-7.4:springboot-2.7.5 AS builder
 WORKDIR /app
 ADD . .
+COPY --from=ui /app/dist /app/server/src/main/resources/public
 RUN ./gradlew bootJar --no-daemon
 
 FROM johnsonlee/java15:latest

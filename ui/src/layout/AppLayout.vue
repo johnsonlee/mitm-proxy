@@ -43,8 +43,9 @@ export default defineComponent({
         <a-layout-sider v-model:collapsed="collapsed" :trigger="null" collapsible>
             <div class="logo" />
             <a-menu v-model:selectedKeys="selectedMenus" theme="dark" mode="inline">
-                <a-menu-item v-for="menu in menus" :key="menu.path">
-                    <router-link :to="menu.path">{{ menu.name }}</router-link>
+                <a-menu-item key="/flow">
+                    <global-outlined />
+                    <span>Flow</span>
                 </a-menu-item>
             </a-menu>
         </a-layout-sider>

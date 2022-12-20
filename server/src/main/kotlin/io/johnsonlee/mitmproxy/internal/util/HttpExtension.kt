@@ -52,25 +52,18 @@ internal fun HttpMessage.body(objectMapper: ObjectMapper): Any? {
     } ?: return null
 
     val contentType = HttpUtil.getMimeType(this)
-    val contentEncoding = headers()[CONTENT_ENCODING]
-    val contentLength = HttpUtil.getContentLength(this, 0)
+    val charset = HttpUtil.getCharset(this)
+    val body = content().toString(charset)
 
-    if (contentEncoding == null && (contentType != null || contentLength in 1..(5 * 1024 * 1024))) {
-        val charset = HttpUtil.getCharset(this)
-        val body = content().toString(charset)
-
-        if (HttpHeaderValues.APPLICATION_JSON.contentEqualsIgnoreCase(contentType)) {
-            try {
-                return objectMapper.readTree(body)
-            } catch (e: JacksonException) {
-                HttpExtension.logger.error("Failed to parse JSON", e)
-            }
+    if (HttpHeaderValues.APPLICATION_JSON.contentEqualsIgnoreCase(contentType)) {
+        try {
+            return objectMapper.readTree(body)
+        } catch (e: JacksonException) {
+            HttpExtension.logger.error("Failed to parse JSON", e)
         }
-
-        return body
     }
 
-    return "(${contentLength} bytes)"
+    return body
 }
 
 @JvmSynthetic

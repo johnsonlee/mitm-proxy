@@ -1,0 +1,6 @@
+**/.git
+**/.gradle
+**/.idea
+**/.vscode
+**/build
+**/node_modules

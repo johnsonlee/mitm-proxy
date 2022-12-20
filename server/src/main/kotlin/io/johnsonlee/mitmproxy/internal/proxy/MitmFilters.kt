@@ -32,6 +32,8 @@ internal class MitmFilters(
     val originalScheme: String
         get() = if ((ctx?.handler() as? ClientToProxyConnection)?.sslEngine == null) "http" else "https"
 
+    val context: ChannelHandlerContext? by lazy { ctx }
+
     private lateinit var request: HttpRequest
 
     private lateinit var outbound: MiddlewarePipeline
