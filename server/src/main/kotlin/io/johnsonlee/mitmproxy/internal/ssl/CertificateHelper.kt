@@ -291,6 +291,6 @@ private fun is32BitJvm(): Boolean {
 
 fun main() {
     val pwd = System.getProperty("user.dir")
-    val certs = File(pwd, listOf("src", "main", "resources", "certs").joinToString(File.separator))
+    val certs = File(pwd, listOf("server", "src", "main", "resources", "certs").joinToString(File.separator))
     CertificateHelper.initializeKeyStore(Authority(), certs)
 }
