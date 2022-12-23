@@ -74,14 +74,11 @@ internal class BouncyCastleSslEngineSource @JvmOverloads constructor(
         sslEngine.enabledCipherSuites = ciphers.toTypedArray()
         if (logger.isDebugEnabled) {
             if (sslEngine.useClientMode) {
-                logger.debug("Enabled server cipher suites:")
+                logger.debug(ciphers.joinToString(", ", "Enabled server cipher suites: "))
             } else {
                 val host: String = sslEngine.peerHost
                 val port: Int = sslEngine.peerPort
                 logger.debug("Enabled client {}:{} cipher suites:", host, port)
-            }
-            for (each in ciphers) {
-                logger.debug(each)
             }
         }
     }
